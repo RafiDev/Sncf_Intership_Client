@@ -40,7 +40,7 @@ class Rexmat extends Component {
         },
       })
       .then(res => {
-        console.log(res);
+        console.log(res.data);
         /*this.setState({
           Hierarchie_de_la_flotte: res.data.data["Hiérarchie de la flotte"],
           Nombre_de_signalement_par_hierarchie: res.data.data["Nombre de signalement par hiérarchie"],
