@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import axios from 'axios'
 
-const endpoint = 'http://localhost:8000/rexmat'
+const endpoint = 'https://sncf-intership-server.herokuapp.com/rexmat'
 
 class Rexmat extends Component {
   constructor(props) {
