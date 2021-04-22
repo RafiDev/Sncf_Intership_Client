@@ -41,7 +41,7 @@ class Rexmat extends Component {
       })
       .then(res => {
         console.log(res.data);
-        /*this.setState({
+        this.setState({
           Hierarchie_de_la_flotte: res.data.data["Hiérarchie de la flotte"],
           Nombre_de_signalement_par_hierarchie: res.data.data["Nombre de signalement par hiérarchie"],
           Nombre_de_système_total: res.data.data["Nombre de système total"],
@@ -52,7 +52,7 @@ class Rexmat extends Component {
           Signalement_H3: res.data.data["Nombre de signalement par hiérarchie"]["systeme en H3"],
           Signalement_H4: res.data.data["Nombre de signalement par hiérarchie"]["systeme en H4"],
           liste_signalement_rexmat: res.data.data["liste signalement rexmat"]
-        })*/
+        })
       })
   }
 
