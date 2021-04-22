@@ -28,20 +28,18 @@ class Rexmat extends Component {
     })
   }
   handleUpload = async() => {
+    const axiosConfig = {
+      headers: {
+
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "application/json",
+      }
+    }
     const data = new FormData()
     data.append('file', this.state.selectedFile, this.state.selectedFile.name)
 
-    await axios({
-      method: 'post',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      url: endpoint,
-      data: data
-    }).then(res => {
-      console.log(res.data);
-    })
-
-    /*
-      .post('https://sncf-intership-server.herokuapp.com/' + 'rexmat', data, {
+    await axios
+      .post(endpoint, data,  axiosConfig, {
         onUploadProgress: ProgressEvent => {
           this.setState({
             loaded: (ProgressEvent.loaded / ProgressEvent.total) * 100,
@@ -61,8 +59,8 @@ class Rexmat extends Component {
           Signalement_H3: res.data.data["Nombre de signalement par hiérarchie"]["systeme en H3"],
           Signalement_H4: res.data.data["Nombre de signalement par hiérarchie"]["systeme en H4"],
           liste_signalement_rexmat: res.data.data["liste signalement rexmat"]
-        })
-      })*/
+        })*/
+      })
   }
 
   render() {
