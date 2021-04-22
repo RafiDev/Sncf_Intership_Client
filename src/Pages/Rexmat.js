@@ -27,12 +27,12 @@ class Rexmat extends Component {
       loaded: 0,
     })
   }
-  handleUpload = () => {
+  handleUpload = async() => {
     const data = new FormData()
     data.append('file', this.state.selectedFile, this.state.selectedFile.name)
 
-    axios
-      .post(endpoint, data, {
+    await axios
+      .post('https://sncf-intership-server.herokuapp.com/' + 'rexmat', data, {
         onUploadProgress: ProgressEvent => {
           this.setState({
             loaded: (ProgressEvent.loaded / ProgressEvent.total) * 100,
