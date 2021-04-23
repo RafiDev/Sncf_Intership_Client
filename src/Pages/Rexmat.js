@@ -30,16 +30,14 @@ class Rexmat extends Component {
   handleUpload = async() => {
     const axiosConfig = {
       headers: {
-
-        "Content-Type": "application/x-www-form-urlencoded",
-        Accept: "application/json",
+        'Access-Control-Allow-Origin': '*',
       }
     }
     const data = new FormData()
     data.append('file', this.state.selectedFile, this.state.selectedFile.name)
 
     await axios
-      .post(endpoint, data,  axiosConfig, {
+      .post(endpoint, axiosConfig, data, {
         onUploadProgress: ProgressEvent => {
           this.setState({
             loaded: (ProgressEvent.loaded / ProgressEvent.total) * 100,
@@ -47,7 +45,7 @@ class Rexmat extends Component {
         },
       })
       .then(res => {
-        console.log(res.data);
+        console.log(res.data.data);
         /*this.setState({
           Hierarchie_de_la_flotte: res.data.data["Hiérarchie de la flotte"],
           Nombre_de_signalement_par_hierarchie: res.data.data["Nombre de signalement par hiérarchie"],
