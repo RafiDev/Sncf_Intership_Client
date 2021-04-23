@@ -30,7 +30,7 @@ class Rexmat extends Component {
   handleUpload = async() => {
     const axiosConfig = {
       headers: {
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': 'https://sncf-intership-server.herokuapp.com',
       }
     }
     const data = new FormData()
