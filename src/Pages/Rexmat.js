@@ -1,5 +1,8 @@
 import React, { Component } from 'react'
 import axios from 'axios'
+import DatePicker from 'react-datepicker'
+
+import "react-datepicker/dist/react-datepicker.css";
 
 const endpoint = 'https://sncf-intership-server.herokuapp.com/rexmat'
 
@@ -7,8 +10,10 @@ class Rexmat extends Component {
   constructor(props) {
     super(props)
     this.state = {
+      startDate: null,
+      endDate: null,
       selectedFile: null,
-      loaded: 0,
+      loaded: null,
       Hierarchie_de_la_flotte: [],
       Nombre_de_signalement_par_hierarchie: [],
       Nombre_de_système_total: null,
@@ -20,7 +25,22 @@ class Rexmat extends Component {
       Signalement_H4: [],
       liste_signalement_rexmat: []
     }
+    this.handleStartDate = this.handleStartDate.bind(this);
+    this.handleEndDate = this.handleEndDate.bind(this);
   }
+
+  handleStartDate = (date) => {
+    this.setState({
+      startDate: date
+    })
+  }
+
+  handleEndDate = (date) => {
+    this.setState({
+      endDate: date
+    })
+  }
+
   handleselectedFile = event => {
     this.setState({
       selectedFile: event.target.files[0],
@@ -37,7 +57,7 @@ class Rexmat extends Component {
     data.append('file', this.state.selectedFile, this.state.selectedFile.name)
 
     await axios
-      .post(endpoint, axiosConfig, data, {
+      .post('http://localhost:8000/rexmat', data, {
         onUploadProgress: ProgressEvent => {
           this.setState({
             loaded: (ProgressEvent.loaded / ProgressEvent.total) * 100,
@@ -45,7 +65,7 @@ class Rexmat extends Component {
         },
       })
       .then(res => {
-        console.log(res.data.data);
+        console.log(res.data);
         /*this.setState({
           Hierarchie_de_la_flotte: res.data.data["Hiérarchie de la flotte"],
           Nombre_de_signalement_par_hierarchie: res.data.data["Nombre de signalement par hiérarchie"],
@@ -65,6 +85,25 @@ class Rexmat extends Component {
     return (
       <div>
           <h1>Rexmat file data</h1>
+          <DatePicker 
+            selected={this.state.startDate}
+            onChange={this.handleStartDate}
+            selectsStart
+            startDate={this.state.startDate}
+            endDate={this.state.endDate}
+            placeholderText="Date de début"
+          />
+          <DatePicker 
+            selected={this.state.endDate}
+            onChange={this.handleEndDate}
+            selectsEnd
+            startDate={this.state.startDate}
+            endDate={this.state.endDate}
+            minDate={this.state.startDate}
+            placeholderText="Date de fin"
+          />
+          <br/>
+          <br/>
           <input type="file" name="" id="" onChange={this.handleselectedFile} />
           <button onClick={this.handleUpload}>Upload</button>
           <br/>
