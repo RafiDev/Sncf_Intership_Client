@@ -1,8 +1,13 @@
 import React, { Component } from 'react'
 import axios from 'axios'
 import DatePicker from 'react-datepicker'
+import {Bar} from 'react-chartjs-2'
+import { buildStyles, CircularProgressbar } from 'react-circular-progressbar'
 
-import "react-datepicker/dist/react-datepicker.css";
+import 'react-circular-progressbar/dist/styles.css'
+
+import './Rexmat.css'
+import "react-datepicker/dist/react-datepicker.css"
 
 const endpoint = 'https://sncf-intership-server.herokuapp.com/rexmat'
 
@@ -15,18 +20,45 @@ class Rexmat extends Component {
       selectedFile: null,
       loaded: null,
       Hierarchie_de_la_flotte: [],
-      Nombre_de_signalement_par_hierarchie: [],
-      Nombre_de_système_total: null,
       Type_de_signalement: [],
-      Signalement_SET: [],
       Signalement_H1: [],
       Signalement_H2: [],
       Signalement_H3: [],
       Signalement_H4: [],
-      liste_signalement_rexmat: []
+      Statut_H1: [],
+      Statut_H2: [],
+      Statut_H3: [],
+      Statut_H4: [],
+
     }
     this.handleStartDate = this.handleStartDate.bind(this);
     this.handleEndDate = this.handleEndDate.bind(this);
+    this.barSignalementHierarchie = this.barSignalementHierarchie.bind(this);
+    this.barSignalementState = this.barSignalementState.bind(this);
+    this.AtraiterStateH1 = this.AtraiterStateH1.bind(this);
+    this.AtraiterStateH2 = this.AtraiterStateH2.bind(this);
+    this.AtraiterStateH3 = this.AtraiterStateH3.bind(this);
+    this.AtraiterStateH4 = this.AtraiterStateH4.bind(this);
+    this.AnalyseRexStateH1 = this.AnalyseRexStateH1.bind(this);
+    this.AnalyseRexStateH2 = this.AnalyseRexStateH2.bind(this);
+    this.AnalyseRexStateH3 = this.AnalyseRexStateH3.bind(this);
+    this.AnalyseRexStateH4 = this.AnalyseRexStateH4.bind(this);
+    this.AttPiecesStateH1 = this.AttPiecesStateH1.bind(this);
+    this.AttPiecesStateH2 = this.AttPiecesStateH2.bind(this);
+    this.AttPiecesStateH3 = this.AttPiecesStateH3.bind(this);
+    this.AttPiecesStateH4 = this.AttPiecesStateH4.bind(this);
+    this.ClotureStateH1 = this.ClotureStateH1.bind(this);
+    this.ClotureStateH2 = this.ClotureStateH2.bind(this);
+    this.ClotureStateH3 = this.ClotureStateH3.bind(this);
+    this.ClotureStateH4 = this.ClotureStateH4.bind(this);
+    this.EnCoursStateH1 = this.EnCoursStateH1.bind(this);
+    this.EnCoursStateH2 = this.EnCoursStateH2.bind(this);
+    this.EnCoursStateH3 = this.EnCoursStateH3.bind(this);
+    this.EnCoursStateH4 = this.EnCoursStateH4.bind(this);
+    this.RameVigilerStateH1 = this.RameVigilerStateH1.bind(this);
+    this.RameVigilerStateH2 = this.RameVigilerStateH2.bind(this);
+    this.RameVigilerStateH3 = this.RameVigilerStateH3.bind(this);
+    this.RameVigilerStateH4 = this.RameVigilerStateH4.bind(this);
   }
 
   handleStartDate = (date) => {
@@ -53,11 +85,6 @@ class Rexmat extends Component {
         'Access-Control-Allow-Origin': 'https://sncf-intership-server.herokuapp.com',
       }
     }
-
-    var date = { 
-      starDate: this.state.startDate,
-      endDate: this.state.endDate 
-    }
     
     const data = new FormData()
     data.append('file', this.state.selectedFile, this.state.selectedFile.name)
@@ -75,24 +102,333 @@ class Rexmat extends Component {
       .then(res => {
         console.log(res.data);
         this.setState({
-          Hierarchie_de_la_flotte: res.data.data["Hiérarchie de la flotte"],
-          Nombre_de_signalement_par_hierarchie: res.data.data["Nombre de signalement par hiérarchie"],
-          Nombre_de_système_total: res.data.data["Nombre de système total"],
-          Type_de_signalement: res.data.data["Type de signalement"],
-          Signalement_SET: res.data.data["Type de signalement"].SET,
-          Signalement_H1: res.data.data["Nombre de signalement par hiérarchie"]["systeme en H1"],
-          Signalement_H2: res.data.data["Nombre de signalement par hiérarchie"]["systeme en H2"],
-          Signalement_H3: res.data.data["Nombre de signalement par hiérarchie"]["systeme en H3"],
-          Signalement_H4: res.data.data["Nombre de signalement par hiérarchie"]["systeme en H4"],
-          liste_signalement_rexmat: res.data.data["liste signalement rexmat"]
+          Hierarchie_de_la_flotte: res.data['Hiérarchie de la flotte'],
+          Type_de_signalement: res.data["Type de signalement"],
+          Signalement_H1: res.data["Signalement par hiérarchie"]["systeme en H1"],
+          Signalement_H2: res.data["Signalement par hiérarchie"]["systeme en H2"],
+          Signalement_H3: res.data["Signalement par hiérarchie"]["systeme en H3"],
+          Signalement_H4: res.data["Signalement par hiérarchie"]["systeme en H4"],
+          Statut_H1: res.data["Statut par hiérarchie"].H1,
+          Statut_H2: res.data["Statut par hiérarchie"].H2,
+          Statut_H3: res.data["Statut par hiérarchie"].H3,
+          Statut_H4: res.data["Statut par hiérarchie"].H4,
         })
       })
   }
 
+  barSignalementHierarchie = () => {
+    const state = {
+      labels: ['ATESS', 'Afficheur', 'BS', 'CCTV', 'Climatisation', 'Compresseur', 'Comptage Passagers', 'Coupleur', 'Detection Incendie', 'EMCO', 'EQS', 'Eclairage', 'Frein', 'Lecteur Badge', 'Porte', 'Pupitre', 'STMAutonome', 'Sonorisation', 'TCMS', 'TDB'],
+      datasets: [
+        {
+          label: "Signalement en H1",
+          backgroundColor: "crimson",
+          borderColor: "red",
+          borderWidth: 1,
+          data: [this.state.Signalement_H1.ATESS, this.state.Signalement_H1.Afficheur, 
+            this.state.Signalement_H1.BS, this.state.Signalement_H1.CCTV, this.state.Signalement_H1.Climatisation,
+            this.state.Signalement_H1.Compresseur, this.state.Signalement_H1["Comptage Passagers"],
+            this.state.Signalement_H1.Coupleur,
+            this.state.Signalement_H1["Detection Incendie"], this.state.Signalement_H1.EMCO, this.state.Signalement_H1.EQS,
+            this.state.Signalement_H1.Eclairage, this.state.Signalement_H1.Frein, this.state.Signalement_H1["Lecteur Badge"],
+            this.state.Signalement_H1.Porte, this.state.Signalement_H1.Pupitre, this.state.Signalement_H1.STMAutonome,
+            this.state.Signalement_H1.Sonorisation, this.state.Signalement_H1.TCMS, this.state.Signalement_H2.TDB],
+        },
+        {
+          label: "Signalement en H2",
+          backgroundColor: 'orange',
+          borderWidth: 1,
+          data: [this.state.Signalement_H2.ATESS, this.state.Signalement_H2.Afficheur, 
+            this.state.Signalement_H2.BS, this.state.Signalement_H2.CCTV, this.state.Signalement_H2.Climatisation,
+            this.state.Signalement_H2.Compresseur, this.state.Signalement_H2["Comptage Passagers"],
+            this.state.Signalement_H2.Coupleur,
+            this.state.Signalement_H2["Detection Incendie"], this.state.Signalement_H2.EMCO, this.state.Signalement_H2.EQS,
+            this.state.Signalement_H2.Eclairage, this.state.Signalement_H2.Frein, this.state.Signalement_H2["Lecteur Badge"],
+            this.state.Signalement_H2.Porte, this.state.Signalement_H2.Pupitre, this.state.Signalement_H2.STMAutonome,
+            this.state.Signalement_H2.Sonorisation, this.state.Signalement_H2.TCMS, this.state.Signalement_H2.TDB],
+        },
+        {
+          label: "Signalement en H3",
+          backgroundColor: "yellow",
+          borderColor: "orange",
+          borderWidth: 1,
+          data: [this.state.Signalement_H3.ATESS, this.state.Signalement_H3.Afficheur, 
+            this.state.Signalement_H3.BS, this.state.Signalement_H3.CCTV, this.state.Signalement_H3.Climatisation,
+            this.state.Signalement_H3.Compresseur, this.state.Signalement_H3["Comptage Passagers"],
+            this.state.Signalement_H3.Coupleur,
+            this.state.Signalement_H3["Detection Incendie"], this.state.Signalement_H3.EMCO, this.state.Signalement_H3.EQS,
+            this.state.Signalement_H3.Eclairage, this.state.Signalement_H3.Frein, this.state.Signalement_H3["Lecteur Badge"],
+            this.state.Signalement_H3.Porte, this.state.Signalement_H3.Pupitre, this.state.Signalement_H3.STMAutonome,
+            this.state.Signalement_H3.Sonorisation, this.state.Signalement_H3.TCMS, this.state.Signalement_H3.TDB],
+        },
+        {
+          label: "Signalement en H4",
+          backgroundColor: "lightgreen",
+          borderColor: "green",
+          borderWidth: 1,
+          data: [this.state.Signalement_H4.ATESS, this.state.Signalement_H4.Afficheur, 
+            this.state.Signalement_H4.BS, this.state.Signalement_H4.CCTV, this.state.Signalement_H4.Climatisation,
+            this.state.Signalement_H4.Compresseur, this.state.Signalement_H4["Comptage Passagers"],
+            this.state.Signalement_H4.Coupleur,
+            this.state.Signalement_H4["Detection Incendie"], this.state.Signalement_H4.EMCO, this.state.Signalement_H4.EQS,
+            this.state.Signalement_H4.Eclairage, this.state.Signalement_H4.Frein, this.state.Signalement_H4["Lecteur Badge"],
+            this.state.Signalement_H4.Porte, this.state.Signalement_H4.Pupitre, this.state.Signalement_H4.STMAutonome,
+            this.state.Signalement_H4.Sonorisation, this.state.Signalement_H4.TCMS, this.state.Signalement_H4.TDB],
+        }
+      ]
+    }
+    return state;
+  }
+
+  barSignalementState = () => {
+    const state = {
+      labels: ['A traiter', 'Analyse Rex', 'Att Pièces', 'Cloturé', 'En cours', 'Rame à vigiler'],
+      datasets: [
+        {
+          label: "Statut en H1",
+          backgroundColor: "crimson",
+          borderColor: "red",
+          borderWidth: 1,
+          data: [
+            this.state.Statut_H1['A traiter'], this.state.Statut_H1['Analyse REX'],
+            this.state.Statut_H1['Att pièces'], this.state.Statut_H1.Cloturé,
+            this.state.Statut_H1['En cours'], this.state.Statut_H1['Rame à vigiler']
+          ]
+        },
+        {
+          label: "Statut en H2",
+          backgroundColor: 'orange',
+          borderWidth: 1,
+          data: [
+            this.state.Statut_H2['A traiter'], this.state.Statut_H2['Analyse REX'],
+            this.state.Statut_H2['Att pièces'], this.state.Statut_H2.Cloturé,
+            this.state.Statut_H2['En cours'], this.state.Statut_H2['Rame à vigiler']
+          ]
+        },
+        {
+          label: "Statut en H3",
+          backgroundColor: "yellow",
+          borderColor: "orange",
+          borderWidth: 1,
+          data: [
+            this.state.Statut_H3['A traiter'], this.state.Statut_H3['Analyse REX'],
+            this.state.Statut_H3['Att pièces'], this.state.Statut_H3.Cloturé,
+            this.state.Statut_H3['En cours'], this.state.Statut_H3['Rame à vigiler']
+          ]
+        },
+        {
+          label: "Statut en H4",
+          backgroundColor: "lightgreen",
+          borderColor: "green",
+          borderWidth: 1,
+          data: [
+            this.state.Statut_H4['A traiter'], this.state.Statut_H4['Analyse REX'],
+            this.state.Statut_H4['Att pièces'], this.state.Statut_H4.Cloturé,
+            this.state.Statut_H4['En cours'], this.state.Statut_H4['Rame à vigiler']
+          ]
+        },
+      ]
+    }
+    return state
+  }
+
+  AtraiterStateH1 = () => {
+    const v1 = this.state.Statut_H1['A traiter'];
+    const v2 = this.state.Statut_H1['Nombre de Statut total H1'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  AtraiterStateH2 = () => {
+    const v1 = this.state.Statut_H2['A traiter'];
+    const v2 = this.state.Statut_H2['Nombre de Statut total H2'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  AtraiterStateH3 = () => {
+    const v1 = this.state.Statut_H3['A traiter'];
+    const v2 = this.state.Statut_H3['Nombre de Statut total H3'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  AtraiterStateH4 = () => {
+    const v1 = this.state.Statut_H4['A traiter'];
+    const v2 = this.state.Statut_H4['Nombre de Statut total H4'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  AnalyseRexStateH1 = () => {
+    const v1 = this.state.Statut_H1['Analyse REX'];
+    const v2 = this.state.Statut_H1['Nombre de Statut total H1'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  AnalyseRexStateH2 = () => {
+    const v1 = this.state.Statut_H2['Analyse REX'];
+    const v2 = this.state.Statut_H2['Nombre de Statut total H2'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  AnalyseRexStateH3 = () => {
+    const v1 = this.state.Statut_H3['Analyse REX'];
+    const v2 = this.state.Statut_H3['Nombre de Statut total H3'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  AnalyseRexStateH4 = () => {
+    const v1 = this.state.Statut_H4['Analyse REX'];
+    const v2 = this.state.Statut_H4['Nombre de Statut total H4'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  AttPiecesStateH1 = () => {
+    const v1 = this.state.Statut_H1['Att pièces'];
+    const v2 = this.state.Statut_H1['Nombre de Statut total H1'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  AttPiecesStateH2 = () => {
+    const v1 = this.state.Statut_H2['Att pièces'];
+    const v2 = this.state.Statut_H2['Nombre de Statut total H2'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  AttPiecesStateH3 = () => {
+    const v1 = this.state.Statut_H3['Att pièces'];
+    const v2 = this.state.Statut_H3['Nombre de Statut total H3'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  AttPiecesStateH4 = () => {
+    const v1 = this.state.Statut_H4['Att pièces'];
+    const v2 = this.state.Statut_H4['Nombre de Statut total H4'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  ClotureStateH1 = () => {
+    const v1 = this.state.Statut_H1.Cloturé;
+    const v2 = this.state.Statut_H1['Nombre de Statut total H1'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  ClotureStateH2 = () => {
+    const v1 = this.state.Statut_H2.Cloturé;
+    const v2 = this.state.Statut_H2['Nombre de Statut total H2'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  ClotureStateH3 = () => {
+    const v1 = this.state.Statut_H3.Cloturé;
+    const v2 = this.state.Statut_H3['Nombre de Statut total H3'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  ClotureStateH4 = () => {
+    const v1 = this.state.Statut_H4['A traiter'];
+    const v2 = this.state.Statut_H4['Nombre de Statut total H4'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  EnCoursStateH1 = () => {
+    const v1 = this.state.Statut_H1['Analyse REX'];
+    const v2 = this.state.Statut_H1['Nombre de Statut total H1'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  EnCoursStateH2 = () => {
+    const v1 = this.state.Statut_H2['Analyse REX'];
+    const v2 = this.state.Statut_H2['Nombre de Statut total H2'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  EnCoursStateH3 = () => {
+    const v1 = this.state.Statut_H3['Analyse REX'];
+    const v2 = this.state.Statut_H3['Nombre de Statut total H3'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  EnCoursStateH4 = () => {
+    const v1 = this.state.Statut_H4['Analyse REX'];
+    const v2 = this.state.Statut_H4['Nombre de Statut total H4'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  RameVigilerStateH1 = () => {
+    const v1 = this.state.Statut_H1['Att pièces'];
+    const v2 = this.state.Statut_H1['Nombre de Statut total H1'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  RameVigilerStateH2 = () => {
+    const v1 = this.state.Statut_H2['Att pièces'];
+    const v2 = this.state.Statut_H2['Nombre de Statut total H2'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  RameVigilerStateH3 = () => {
+    const v1 = this.state.Statut_H3['Att pièces'];
+    const v2 = this.state.Statut_H3['Nombre de Statut total H3'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
+  RameVigilerStateH4 = () => {
+    const v1 = this.state.Statut_H4['Att pièces'];
+    const v2 = this.state.Statut_H4['Nombre de Statut total H4'];
+    const percent = v1 * 100 / v2;
+
+    return percent.toFixed(2);
+  }
+
   render() {
     return (
-      <div>
-          <h1>Rexmat file data</h1>
+      <div className='all'>
+        <h1>Rexmat file data</h1>
+        <div className="date">
           <DatePicker 
             selected={this.state.startDate}
             onChange={this.handleStartDate}
@@ -110,193 +446,395 @@ class Rexmat extends Component {
             minDate={this.state.startDate}
             placeholderText="Date de fin"
           />
-          <br/>
-          <br/>
+        </div>
+        <br/>
+        <div className ="upload">
           <input type="file" name="" id="" onChange={this.handleselectedFile} />
           <button onClick={this.handleUpload}>Upload</button>
+        </div>
+        <br/>
+        <div className='Rames'>
+          <div className='RameH1'>
+              <h4>Nombre de rame en H1</h4>
+              <p>{this.state.Hierarchie_de_la_flotte.H1}</p>
+            </div>
+            <br/>
+            <div className='RameH2'>
+              <h4>Nombre de rame en H2</h4>
+              <p>{this.state.Hierarchie_de_la_flotte.H2}</p>
+            </div>
+            <br/>
+            <div className='RameH3'>
+              <h4>Nombre de rame en H3</h4>
+              <p>{this.state.Hierarchie_de_la_flotte.H3}</p>
+            </div>
+            <br/>
+            <div className='RameH4'>
+              <h4>Nombre de rame en H4</h4>
+              <p>{this.state.Hierarchie_de_la_flotte.H4}</p>
+            </div>
+          </div>
           <br/>
-          <div> {Math.round(this.state.loaded, 2)} %</div>
           <br/>
-          <table>
-            <thead>
-              <tr>
-                <th>Nombre de système total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{this.state.Nombre_de_système_total}</td>
-              </tr>
-            </tbody>
-          </table>
           <br/>
-          <table>
-            <thead>
-              <tr>
-              <th>H1</th>
-              <th>H2</th>
-              <th>H3</th>
-              <th>H4</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{this.state.Hierarchie_de_la_flotte.H1}</td>
-                <td>{this.state.Hierarchie_de_la_flotte.H2}</td>
-                <td>{this.state.Hierarchie_de_la_flotte.H3}</td>
-                <td>{this.state.Hierarchie_de_la_flotte.H4}</td>
-              </tr>
-            </tbody>
-          </table>
           <br/>
-          <table>
-            <thead>
-              <tr>
-              <th>Nombre total de SET</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{this.state.Type_de_signalement["Nombre total de SET"]}</td>
-              </tr>
-            </tbody>
-          </table>
           <br/>
-          <table>
-            <thead>
-              <tr>
-              <th>Nombre total de CBM</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{this.state.Type_de_signalement["Nombre total de CBM"]}</td>
-              </tr>
-            </tbody>
-          </table>
           <br/>
-          <h2>Nombre de systeme au total</h2>
-          <ul>
-            <li>ATESS: {this.state.Signalement_SET.ATESS}</li>
-            <li>Afficheur: {this.state.Signalement_SET.Afficheur}</li>
-            <li>BS: {this.state.Signalement_SET.BS}</li>
-            <li>CCTV: {this.state.Signalement_SET.CCTV}</li>
-            <li>Climatisation: {this.state.Signalement_SET.Climatisation}</li>
-            <li>Compresseur: {this.state.Signalement_SET.Compresseur}</li>
-            <li>Comptage Passagers: {this.state.Signalement_SET["Comptage Passagers"]}</li>
-            <li>Detection Incendie: {this.state.Signalement_SET["Detection Incendie"]}</li>
-            <li>EMCO: {this.state.Signalement_SET.EMCO}</li>
-            <li>EQS: {this.state.Signalement_SET.EQS}</li>
-            <li>Eclairage: {this.state.Signalement_SET.Eclairage}</li>
-            <li>Frein: {this.state.Signalement_SET.Frein}</li>
-            <li>Lecteur Badge: {this.state.Signalement_SET["Lecteur Badge"]}</li>
-            <li>Porte: {this.state.Signalement_SET.Porte}</li>
-            <li>Pupitre: {this.state.Signalement_SET.Pupitre}</li>
-            <li>Sonorisation: {this.state.Signalement_SET.Sonorisation}</li>
-            <li>TCMS: {this.state.Signalement_SET.TCMS}</li>
-            <li>Traction: {this.state.Signalement_SET.Traction}</li>
-          </ul>
           <br/>
-          <h2>Liste de signalement rexmat</h2>
-          <ul>
-            {this.state.liste_signalement_rexmat.map(liste => (<li key={liste}>{liste}</li>))}
-          </ul>
           <br/>
-          <h2>Nombre de systeme en H1</h2>
-          <ul>
-            <li>ATESS: {this.state.Signalement_H1.ATESS}</li>
-            <li>Afficheur: {this.state.Signalement_H1.Afficheur}</li>
-            <li>BS: {this.state.Signalement_H1.BS}</li>
-            <li>CCTV: {this.state.Signalement_H1.CCTV}</li>
-            <li>Climatisation: {this.state.Signalement_H1.Climatisation}</li>
-            <li>Compresseur: {this.state.Signalement_H1.Compresseur}</li>
-            <li>Comptage Passagers: {this.state.Signalement_H1["Comptage Passagers"]}</li>
-            <li>Detection Incendie: {this.state.Signalement_H1["Detection Incendie"]}</li>
-            <li>EMCO: {this.state.Signalement_H1.EMCO}</li>
-            <li>EQS: {this.state.Signalement_H1.EQS}</li>
-            <li>Eclairage: {this.state.Signalement_H1.Eclairage}</li>
-            <li>Frein: {this.state.Signalement_H1.Frein}</li>
-            <li>Lecteur Badge: {this.state.Signalement_H1["Lecteur Badge"]}</li>
-            <li>Porte: {this.state.Signalement_H1.Porte}</li>
-            <li>Pupitre: {this.state.Signalement_H1.Pupitre}</li>
-            <li>Sonorisation: {this.state.Signalement_H1.Sonorisation}</li>
-            <li>TCMS: {this.state.Signalement_H1.TCMS}</li>
-            <li>Traction: {this.state.Signalement_H1.Traction}</li>
-            <li>Total de SET en H1: {this.state.Signalement_H1["Nombre de SET en H1"]}</li>
-            <li>Total de CBM en H1: {this.state.Signalement_H1["Nombre de CBM en H1"]}</li>
-          </ul>
           <br/>
-          <h2>Nombre de systeme en H2</h2>
-          <ul>
-            <li>ATESS: {this.state.Signalement_H2.ATESS}</li>
-            <li>Afficheur: {this.state.Signalement_H2.Afficheur}</li>
-            <li>BS: {this.state.Signalement_H2.BS}</li>
-            <li>CCTV: {this.state.Signalement_H2.CCTV}</li>
-            <li>Climatisation: {this.state.Signalement_H2.Climatisation}</li>
-            <li>Compresseur: {this.state.Signalement_H2.Compresseur}</li>
-            <li>Comptage Passagers: {this.state.Signalement_H2["Comptage Passagers"]}</li>
-            <li>Detection Incendie: {this.state.Signalement_H2["Detection Incendie"]}</li>
-            <li>EMCO: {this.state.Signalement_H2.EMCO}</li>
-            <li>EQS: {this.state.Signalement_H2.EQS}</li>
-            <li>Eclairage: {this.state.Signalement_H2.Eclairage}</li>
-            <li>Frein: {this.state.Signalement_H2.Frein}</li>
-            <li>Lecteur Badge: {this.state.Signalement_H2["Lecteur Badge"]}</li>
-            <li>Porte: {this.state.Signalement_H2.Porte}</li>
-            <li>Pupitre: {this.state.Signalement_H2.Pupitre}</li>
-            <li>Sonorisation: {this.state.Signalement_H2.Sonorisation}</li>
-            <li>TCMS: {this.state.Signalement_H2.TCMS}</li>
-            <li>Traction: {this.state.Signalement_H2.Traction}</li>
-            <li>Total de SET en H2: {this.state.Signalement_H2["Nombre de SET en H2"]}</li>
-            <li>Total de CBM en H2: {this.state.Signalement_H2["Nombre de CBM en H2"]}</li>
-          </ul>
           <br/>
-          <h2>Nombre de systeme en H3</h2>
-          <ul>
-            <li>ATESS: {this.state.Signalement_H3.ATESS}</li>
-            <li>Afficheur: {this.state.Signalement_H3.Afficheur}</li>
-            <li>BS: {this.state.Signalement_H3.BS}</li>
-            <li>CCTV: {this.state.Signalement_H3.CCTV}</li>
-            <li>Climatisation: {this.state.Signalement_H3.Climatisation}</li>
-            <li>Compresseur: {this.state.Signalement_H3.Compresseur}</li>
-            <li>Comptage Passagers: {this.state.Signalement_H3["Comptage Passagers"]}</li>
-            <li>Detection Incendie: {this.state.Signalement_H3["Detection Incendie"]}</li>
-            <li>EMCO: {this.state.Signalement_H3.EMCO}</li>
-            <li>EQS: {this.state.Signalement_H3.EQS}</li>
-            <li>Eclairage: {this.state.Signalement_H3.Eclairage}</li>
-            <li>Frein: {this.state.Signalement_H3.Frein}</li>
-            <li>Lecteur Badge: {this.state.Signalement_H3["Lecteur Badge"]}</li>
-            <li>Porte: {this.state.Signalement_H3.Porte}</li>
-            <li>Pupitre: {this.state.Signalement_H3.Pupitre}</li>
-            <li>Sonorisation: {this.state.Signalement_H3.Sonorisation}</li>
-            <li>TCMS: {this.state.Signalement_H3.TCMS}</li>
-            <li>Traction: {this.state.Signalement_H3.Traction}</li>
-            <li>Total de SET en H3: {this.state.Signalement_H3["Nombre de SET en H3"]}</li>
-            <li>Total de CBM en H3: {this.state.Signalement_H3["Nombre de CBM en H3"]}</li>
-          </ul>
+          <div className='bar'>
+            <div className='barSignalement'>
+              <Bar
+                data={this.barSignalementHierarchie()}
+              />
+            </div>
+            <br/>
+            <div className='barStates'>
+              <Bar
+                data={this.barSignalementState()}
+              />
+            </div>
+          </div>
           <br/>
-          <h2>Nombre de systeme en H4</h2>
-          <ul>
-            <li>ATESS: {this.state.Signalement_H4.ATESS}</li>
-            <li>Afficheur: {this.state.Signalement_H4.Afficheur}</li>
-            <li>BS: {this.state.Signalement_H4.BS}</li>
-            <li>CCTV: {this.state.Signalement_H4.CCTV}</li>
-            <li>Climatisation: {this.state.Signalement_H4.Climatisation}</li>
-            <li>Compresseur: {this.state.Signalement_H4.Compresseur}</li>
-            <li>Comptage Passagers: {this.state.Signalement_H4["Comptage Passagers"]}</li>
-            <li>Detection Incendie: {this.state.Signalement_H4["Detection Incendie"]}</li>
-            <li>EMCO: {this.state.Signalement_H4.EMCO}</li>
-            <li>EQS: {this.state.Signalement_H4.EQS}</li>
-            <li>Eclairage: {this.state.Signalement_H4.Eclairage}</li>
-            <li>Frein: {this.state.Signalement_H4.Frein}</li>
-            <li>Lecteur Badge: {this.state.Signalement_H4["Lecteur Badge"]}</li>
-            <li>Porte: {this.state.Signalement_H4.Porte}</li>
-            <li>Pupitre: {this.state.Signalement_H4.Pupitre}</li>
-            <li>Sonorisation: {this.state.Signalement_H4.Sonorisation}</li>
-            <li>TCMS: {this.state.Signalement_H4.TCMS}</li>
-            <li>Traction: {this.state.Signalement_H4.Traction}</li>
-            <li>Total de SET en H4: {this.state.Signalement_H4["Nombre de SET en H4"]}</li>
-            <li>Total de CBM en H4: {this.state.Signalement_H4["Nombre de CBM en H4"]}</li>
-          </ul>
+          <div className='Statut'>
+            <div className='traiterH1'>
+              <h4>Pourcentage de à traiter en H1</h4>
+              <CircularProgressbar 
+                value={this.AtraiterStateH1()}
+                text={`${this.AtraiterStateH1()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+            <br/>
+            <div className='traiterH2'>
+              <h4>Pourcentage de à traiter en H2</h4>
+              <CircularProgressbar 
+                value={this.AtraiterStateH2()}
+                text={`${this.AtraiterStateH2()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+            <br/>
+            <div className='traiterH3'>
+              <h4>Pourcentage de à traiter en H3</h4>
+              <CircularProgressbar 
+                value={this.AtraiterStateH3()}
+                text={`${this.AtraiterStateH3()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+            <br/>
+            <div className='traiterH4'>
+              <h4>Pourcentage de à traiter en H4</h4>
+              <CircularProgressbar 
+                value={this.AtraiterStateH4()}
+                text={`${this.AtraiterStateH4()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+            <br/>
+            <div className='AnalyseRexH1'>
+              <h4>Pourcentage de analyse REX en H1</h4>
+              <CircularProgressbar 
+                value={this.AnalyseRexStateH1()}
+                text={`${this.AnalyseRexStateH1()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+            <br/>
+            <div className='AnalyseRexH2'>
+              <h4>Pourcentage de analyse REX en H2</h4>
+              <CircularProgressbar 
+                value={this.AnalyseRexStateH2()}
+                text={`${this.AnalyseRexStateH2()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+            <br/>
+            <div className='AnalyseRexH3'>
+              <h4>Pourcentage de analyse REX en H3</h4>
+              <CircularProgressbar 
+                value={this.AnalyseRexStateH3()}
+                text={`${this.AnalyseRexStateH3()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+            <br/>
+            <div className='AnalyseRexH4'>
+              <h4>Pourcentage de analyse REX en H1</h4>
+              <CircularProgressbar 
+                value={this.AnalyseRexStateH4()}
+                text={`${this.AnalyseRexStateH4()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+            <br/>
+            <div className='piecesH1'>
+              <h4>Pourcentage d'att pièces en H1</h4>
+              <CircularProgressbar 
+                  value={this.AttPiecesStateH1()}
+                  text={`${this.AttPiecesStateH1()}%`}
+                  circleRatio={0.6}
+                  styles={buildStyles({
+                    rotation: 1 / 2 + 1 / 5,
+                    strokeLinecap: 'butt',
+                    trailColor: '#eee'
+                  })}
+                />
+            </div>
+            <br/>
+            <div className='piecesH2'>
+              <h4>Pourcentage d'att pièces en H2</h4>
+              <CircularProgressbar 
+                value={this.AttPiecesStateH2()}
+                text={`${this.AttPiecesStateH2()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />  
+            </div>
+            <br/>
+            <div className='piecesH3'>
+              <h4>Pourcentage d'att pièces en H3</h4>
+              <CircularProgressbar 
+                value={this.AttPiecesStateH3()}
+                text={`${this.AttPiecesStateH3()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+            <br/>
+            <div className='piecesH4'>
+              <h4>Pourcentage d'att pièces en H4</h4>
+              <CircularProgressbar 
+                value={this.AttPiecesStateH4()}
+                text={`${this.AttPiecesStateH4()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />  
+            </div>
+            <br/>
+            <div className='clotureH1'>
+              <h4>Pourcentage de cloturé en H1</h4>
+              <CircularProgressbar 
+                value={this.ClotureStateH1()}
+                text={`${this.ClotureStateH1()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+            <br/>
+            <div className='clotureH2'>
+              <h4>Pourcentage de cloturé en H2</h4>
+              <CircularProgressbar 
+                value={this.ClotureStateH2()}
+                text={`${this.ClotureStateH2()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />    
+            </div>
+            <br/>
+            <div className='clotureH3'>
+              <h4>Pourcentage de cloturé en H3</h4>
+              <CircularProgressbar 
+                value={this.ClotureStateH3()}
+                text={`${this.ClotureStateH3()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              /> 
+            </div>
+            <br/>
+            <div className='clotureH4'>
+              <h4>Pourcentage de cloturé en H4</h4>
+              <CircularProgressbar 
+                value={this.ClotureStateH4()}
+                text={`${this.ClotureStateH4()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+            <br/>
+            <div className='EnCoursH1'>
+              <h4>Pourcentage de en cours en H1</h4>
+              <CircularProgressbar 
+                value={this.EnCoursStateH1()}
+                text={`${this.EnCoursStateH1()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+            <br/>
+            <div className='EnCoursH2'>
+              <h4>Pourcentage de en cours en H2</h4>
+              <CircularProgressbar 
+                value={this.EnCoursStateH2()}
+                text={`${this.EnCoursStateH2()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+            <br/>
+            <div className='EnCoursH3'>
+              <h4>Pourcentage de en cours en H3</h4>
+              <CircularProgressbar 
+                value={this.EnCoursStateH3()}
+                text={`${this.EnCoursStateH3()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+            <br/>
+            <div className='EnCoursH4'>
+              <h4>Pourcentage de en cours en H4</h4>
+              <CircularProgressbar 
+                value={this.EnCoursStateH4()}
+                text={`${this.EnCoursStateH4()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+            <br/>
+            <div className='vigilerH1'>
+              <h4>Pourcentage de rame à vigiler H1</h4>
+              <CircularProgressbar 
+                value={this.RameVigilerStateH1()}
+                text={`${this.RameVigilerStateH1()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+            <br/>
+            <div className='vigilerH2'>
+              <h4>Pourcentage de rame à vigiler H2</h4>
+              <CircularProgressbar 
+                value={this.RameVigilerStateH2()}
+                text={`${this.RameVigilerStateH2()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+            <br/>
+            <div className='vigilerH3'>
+              <h4>Pourcentage de rame à vigiler H3</h4>
+              <CircularProgressbar 
+                value={this.RameVigilerStateH3()}
+                text={`${this.RameVigilerStateH3()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+            <br/>
+            <div className='vigilerH4'>
+              <h4>Pourcentage de rame à vigiler H4</h4>
+              <CircularProgressbar 
+                value={this.RameVigilerStateH4()}
+                text={`${this.RameVigilerStateH4()}%`}
+                circleRatio={0.6}
+                styles={buildStyles({
+                  rotation: 1 / 2 + 1 / 5,
+                  strokeLinecap: 'butt',
+                  trailColor: '#eee'
+                })}
+              />
+            </div>
+          </div>
       </div>
     )
   }
