@@ -3,18 +3,20 @@ import axios from 'axios'
 import DatePicker from 'react-datepicker'
 import {Bar} from 'react-chartjs-2'
 import { buildStyles, CircularProgressbar } from 'react-circular-progressbar'
+import Select from 'react-select';
 
 import 'react-circular-progressbar/dist/styles.css'
 
 import './Rexmat.css'
 import "react-datepicker/dist/react-datepicker.css"
 
-const endpoint = 'https://sncf-intership-server.herokuapp.com/rexmat'
+const timeOptions = [{value: 'semaine', label: 'Semaine'}, {value:'mois', label: 'Mois'}]
 
 class Rexmat extends Component {
   constructor(props) {
     super(props)
     this.state = {
+      time: null,
       startDate: null,
       endDate: null,
       selectedFile: null,
@@ -29,8 +31,11 @@ class Rexmat extends Component {
       Statut_H2: [],
       Statut_H3: [],
       Statut_H4: [],
-
+      data: [],
     }
+    this.handleGetDataFromMongoForWeek  = this.handleGetDataFromMongoForWeek.bind(this);
+    this.handleUpload = this.handleUpload.bind(this);
+    this.handleSelectTime = this.handleSelectTime.bind(this);
     this.handleStartDate = this.handleStartDate.bind(this);
     this.handleEndDate = this.handleEndDate.bind(this);
     this.barSignalementHierarchie = this.barSignalementHierarchie.bind(this);
@@ -61,6 +66,10 @@ class Rexmat extends Component {
     this.RameVigilerStateH4 = this.RameVigilerStateH4.bind(this);
   }
 
+  handleSelectTime = time => {
+    this.setState({ time })
+  }
+
   handleStartDate = (date) => {
     this.setState({
       startDate: date
@@ -80,17 +89,18 @@ class Rexmat extends Component {
     })
   }
   handleUpload = async() => {
-    const axiosConfig = {
+    /*const axiosConfig = {
       headers: {
         'Access-Control-Allow-Origin': 'https://sncf-intership-server.herokuapp.com',
       }
-    }
+    }*/
     
     const data = new FormData()
     data.append('file', this.state.selectedFile, this.state.selectedFile.name)
+    data.append('time', this.state.time.value)
     data.append('dateStart', this.state.startDate)
     data.append('dateEnd', this.state.endDate)
-
+    
     await axios
       .post('http://localhost:8000/rexmat', data, {
         onUploadProgress: ProgressEvent => {
@@ -116,6 +126,14 @@ class Rexmat extends Component {
       })
   }
 
+  handleGetDataFromMongoForWeek  = async() => {
+    await axios
+      .get('http://localhost:8000/getDataRexmatWeek')
+      .then(res => {
+        console.log(res.data);
+      })
+  }
+    
   barSignalementHierarchie = () => {
     const state = {
       labels: ['ATESS', 'Afficheur', 'BS', 'CCTV', 'Climatisation', 'Compresseur', 'Comptage Passagers', 'Coupleur', 'Detection Incendie', 'EMCO', 'EQS', 'Eclairage', 'Frein', 'Lecteur Badge', 'Porte', 'Pupitre', 'STMAutonome', 'Sonorisation', 'TCMS', 'TDB'],
@@ -136,7 +154,8 @@ class Rexmat extends Component {
         },
         {
           label: "Signalement en H2",
-          backgroundColor: 'orange',
+          backgroundColor: 'coral',
+          borderColor: 'orangered',
           borderWidth: 1,
           data: [this.state.Signalement_H2.ATESS, this.state.Signalement_H2.Afficheur, 
             this.state.Signalement_H2.BS, this.state.Signalement_H2.CCTV, this.state.Signalement_H2.Climatisation,
@@ -149,8 +168,8 @@ class Rexmat extends Component {
         },
         {
           label: "Signalement en H3",
-          backgroundColor: "yellow",
-          borderColor: "orange",
+          backgroundColor: "orange",
+          borderColor: "darkorange",
           borderWidth: 1,
           data: [this.state.Signalement_H3.ATESS, this.state.Signalement_H3.Afficheur, 
             this.state.Signalement_H3.BS, this.state.Signalement_H3.CCTV, this.state.Signalement_H3.Climatisation,
@@ -163,8 +182,8 @@ class Rexmat extends Component {
         },
         {
           label: "Signalement en H4",
-          backgroundColor: "lightgreen",
-          borderColor: "green",
+          backgroundColor: "yellow",
+          borderColor: "gold",
           borderWidth: 1,
           data: [this.state.Signalement_H4.ATESS, this.state.Signalement_H4.Afficheur, 
             this.state.Signalement_H4.BS, this.state.Signalement_H4.CCTV, this.state.Signalement_H4.Climatisation,
@@ -197,7 +216,8 @@ class Rexmat extends Component {
         },
         {
           label: "Statut en H2",
-          backgroundColor: 'orange',
+          backgroundColor: 'coral',
+          borderColor: 'orangered',
           borderWidth: 1,
           data: [
             this.state.Statut_H2['A traiter'], this.state.Statut_H2['Analyse REX'],
@@ -207,8 +227,8 @@ class Rexmat extends Component {
         },
         {
           label: "Statut en H3",
-          backgroundColor: "yellow",
-          borderColor: "orange",
+          backgroundColor: "orange",
+          borderColor: "darkorange",
           borderWidth: 1,
           data: [
             this.state.Statut_H3['A traiter'], this.state.Statut_H3['Analyse REX'],
@@ -218,8 +238,8 @@ class Rexmat extends Component {
         },
         {
           label: "Statut en H4",
-          backgroundColor: "lightgreen",
-          borderColor: "green",
+          backgroundColor: "yellow",
+          borderColor: "gold",
           borderWidth: 1,
           data: [
             this.state.Statut_H4['A traiter'], this.state.Statut_H4['Analyse REX'],
@@ -353,7 +373,7 @@ class Rexmat extends Component {
   }
 
   ClotureStateH4 = () => {
-    const v1 = this.state.Statut_H4['A traiter'];
+    const v1 = this.state.Statut_H4.Cloturé;
     const v2 = this.state.Statut_H4['Nombre de Statut total H4'];
     const percent = v1 * 100 / v2;
 
@@ -361,7 +381,7 @@ class Rexmat extends Component {
   }
 
   EnCoursStateH1 = () => {
-    const v1 = this.state.Statut_H1['Analyse REX'];
+    const v1 = this.state.Statut_H1['En cours'];
     const v2 = this.state.Statut_H1['Nombre de Statut total H1'];
     const percent = v1 * 100 / v2;
 
@@ -369,7 +389,7 @@ class Rexmat extends Component {
   }
 
   EnCoursStateH2 = () => {
-    const v1 = this.state.Statut_H2['Analyse REX'];
+    const v1 = this.state.Statut_H2['En cours'];
     const v2 = this.state.Statut_H2['Nombre de Statut total H2'];
     const percent = v1 * 100 / v2;
 
@@ -377,7 +397,7 @@ class Rexmat extends Component {
   }
 
   EnCoursStateH3 = () => {
-    const v1 = this.state.Statut_H3['Analyse REX'];
+    const v1 = this.state.Statut_H3['En cours'];
     const v2 = this.state.Statut_H3['Nombre de Statut total H3'];
     const percent = v1 * 100 / v2;
 
@@ -385,7 +405,7 @@ class Rexmat extends Component {
   }
 
   EnCoursStateH4 = () => {
-    const v1 = this.state.Statut_H4['Analyse REX'];
+    const v1 = this.state.Statut_H4['En cours'];
     const v2 = this.state.Statut_H4['Nombre de Statut total H4'];
     const percent = v1 * 100 / v2;
 
@@ -393,7 +413,7 @@ class Rexmat extends Component {
   }
 
   RameVigilerStateH1 = () => {
-    const v1 = this.state.Statut_H1['Att pièces'];
+    const v1 = this.state.Statut_H1['Rame à vigiler'];
     const v2 = this.state.Statut_H1['Nombre de Statut total H1'];
     const percent = v1 * 100 / v2;
 
@@ -401,7 +421,7 @@ class Rexmat extends Component {
   }
 
   RameVigilerStateH2 = () => {
-    const v1 = this.state.Statut_H2['Att pièces'];
+    const v1 = this.state.Statut_H2['Rame à vigiler'];
     const v2 = this.state.Statut_H2['Nombre de Statut total H2'];
     const percent = v1 * 100 / v2;
 
@@ -409,7 +429,7 @@ class Rexmat extends Component {
   }
 
   RameVigilerStateH3 = () => {
-    const v1 = this.state.Statut_H3['Att pièces'];
+    const v1 = this.state.Statut_H3['Rame à vigiler'];
     const v2 = this.state.Statut_H3['Nombre de Statut total H3'];
     const percent = v1 * 100 / v2;
 
@@ -417,7 +437,7 @@ class Rexmat extends Component {
   }
 
   RameVigilerStateH4 = () => {
-    const v1 = this.state.Statut_H4['Att pièces'];
+    const v1 = this.state.Statut_H4['Rame à vigiler'];
     const v2 = this.state.Statut_H4['Nombre de Statut total H4'];
     const percent = v1 * 100 / v2;
 
@@ -428,6 +448,14 @@ class Rexmat extends Component {
     return (
       <div className='all'>
         <h1>Rexmat file data</h1>
+        <div className="selectTime">
+          <Select 
+            value={this.state.time}
+            onChange={this.handleSelectTime}
+            options={timeOptions}
+            placeholder="Selectionner la durée"
+          />
+        </div>
         <div className="date">
           <DatePicker 
             selected={this.state.startDate}
@@ -453,211 +481,180 @@ class Rexmat extends Component {
           <button onClick={this.handleUpload}>Upload</button>
         </div>
         <br/>
-        <div className='Rames'>
-          <div className='RameH1'>
-              <h4>Nombre de rame en H1</h4>
-              <p>{this.state.Hierarchie_de_la_flotte.H1}</p>
-            </div>
-            <br/>
-            <div className='RameH2'>
-              <h4>Nombre de rame en H2</h4>
-              <p>{this.state.Hierarchie_de_la_flotte.H2}</p>
-            </div>
-            <br/>
-            <div className='RameH3'>
-              <h4>Nombre de rame en H3</h4>
-              <p>{this.state.Hierarchie_de_la_flotte.H3}</p>
-            </div>
-            <br/>
-            <div className='RameH4'>
-              <h4>Nombre de rame en H4</h4>
-              <p>{this.state.Hierarchie_de_la_flotte.H4}</p>
-            </div>
+        <div className='bar'>
+          <div className='barSignalement'>
+            <Bar
+              data={this.barSignalementHierarchie()}
+            />
           </div>
           <br/>
-          <br/>
-          <br/>
-          <br/>
-          <br/>
-          <br/>
-          <br/>
-          <br/>
-          <br/>
-          <br/>
-          <div className='bar'>
-            <div className='barSignalement'>
-              <Bar
-                data={this.barSignalementHierarchie()}
-              />
-            </div>
-            <br/>
-            <div className='barStates'>
-              <Bar
-                data={this.barSignalementState()}
-              />
-            </div>
+          <div className='barStates'>
+            <Bar
+              data={this.barSignalementState()}
+            />
+          </div>
+        </div>
+        <br/>
+        <div className='Statut'>
+          <div className='traiterH1'>
+            <h4>Pourcentage de à traiter en H1</h4>
+            <CircularProgressbar 
+              value={this.AtraiterStateH1()}
+              text={`${this.state.Statut_H1['A traiter']} - ${this.AtraiterStateH1()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee'
+              })}
+            />
           </div>
           <br/>
-          <div className='Statut'>
-            <div className='traiterH1'>
-              <h4>Pourcentage de à traiter en H1</h4>
-              <CircularProgressbar 
-                value={this.AtraiterStateH1()}
-                text={`${this.AtraiterStateH1()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
-            <br/>
-            <div className='traiterH2'>
-              <h4>Pourcentage de à traiter en H2</h4>
-              <CircularProgressbar 
-                value={this.AtraiterStateH2()}
-                text={`${this.AtraiterStateH2()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
-            <br/>
-            <div className='traiterH3'>
-              <h4>Pourcentage de à traiter en H3</h4>
-              <CircularProgressbar 
-                value={this.AtraiterStateH3()}
-                text={`${this.AtraiterStateH3()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
-            <br/>
-            <div className='traiterH4'>
-              <h4>Pourcentage de à traiter en H4</h4>
-              <CircularProgressbar 
-                value={this.AtraiterStateH4()}
-                text={`${this.AtraiterStateH4()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
-            <br/>
-            <div className='AnalyseRexH1'>
-              <h4>Pourcentage de analyse REX en H1</h4>
-              <CircularProgressbar 
-                value={this.AnalyseRexStateH1()}
-                text={`${this.AnalyseRexStateH1()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
-            <br/>
-            <div className='AnalyseRexH2'>
-              <h4>Pourcentage de analyse REX en H2</h4>
-              <CircularProgressbar 
-                value={this.AnalyseRexStateH2()}
-                text={`${this.AnalyseRexStateH2()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
-            <br/>
-            <div className='AnalyseRexH3'>
-              <h4>Pourcentage de analyse REX en H3</h4>
-              <CircularProgressbar 
-                value={this.AnalyseRexStateH3()}
-                text={`${this.AnalyseRexStateH3()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
-            <br/>
-            <div className='AnalyseRexH4'>
-              <h4>Pourcentage de analyse REX en H1</h4>
-              <CircularProgressbar 
-                value={this.AnalyseRexStateH4()}
-                text={`${this.AnalyseRexStateH4()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
-            <br/>
-            <div className='piecesH1'>
-              <h4>Pourcentage d'att pièces en H1</h4>
-              <CircularProgressbar 
-                  value={this.AttPiecesStateH1()}
-                  text={`${this.AttPiecesStateH1()}%`}
-                  circleRatio={0.6}
-                  styles={buildStyles({
-                    rotation: 1 / 2 + 1 / 5,
-                    strokeLinecap: 'butt',
-                    trailColor: '#eee'
-                  })}
-                />
-            </div>
-            <br/>
-            <div className='piecesH2'>
-              <h4>Pourcentage d'att pièces en H2</h4>
-              <CircularProgressbar 
-                value={this.AttPiecesStateH2()}
-                text={`${this.AttPiecesStateH2()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />  
-            </div>
-            <br/>
-            <div className='piecesH3'>
-              <h4>Pourcentage d'att pièces en H3</h4>
-              <CircularProgressbar 
-                value={this.AttPiecesStateH3()}
-                text={`${this.AttPiecesStateH3()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
+          <div className='traiterH2'>
+            <h4>Pourcentage de à traiter en H2</h4>
+            <CircularProgressbar 
+              value={this.AtraiterStateH2()}
+              text={`${this.state.Statut_H2['A traiter']} - ${this.AtraiterStateH2()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee'
+              })}
+            />
+          </div>
+          <br/>
+          <div className='traiterH3'>
+            <h4>Pourcentage de à traiter en H3</h4>
+            <CircularProgressbar 
+              value={this.AtraiterStateH3()}
+              text={`${this.state.Statut_H3['A traiter']} - ${this.AtraiterStateH3()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee'
+              })}
+            />
+          </div>
+          <br/>
+          <div className='traiterH4'>
+            <h4>Pourcentage de à traiter en H4</h4>
+            <CircularProgressbar 
+              value={this.AtraiterStateH4()}
+              text={`${this.state.Statut_H4['A traiter']} - ${this.AtraiterStateH4()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee'
+              })}
+            />
+          </div>
+          <br/>
+          <div className='AnalyseRexH1'>
+            <h4>Pourcentage de analyse REX en H1</h4>
+            <CircularProgressbar 
+              value={this.AnalyseRexStateH1()}
+              text={`${this.state.Statut_H1['Analyse REX']} - ${this.AnalyseRexStateH1()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee'
+              })}
+            />
+          </div>
+          <br/>
+          <div className='AnalyseRexH2'>
+            <h4>Pourcentage de analyse REX en H2</h4>
+            <CircularProgressbar 
+              value={this.AnalyseRexStateH2()}
+              text={`${this.state.Statut_H2['Analyse REX']} - ${this.AnalyseRexStateH2()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee'
+              })}
+            />
+          </div>
+          <br/>
+          <div className='AnalyseRexH3'>
+            <h4>Pourcentage de analyse REX en H3</h4>
+            <CircularProgressbar 
+              value={this.AnalyseRexStateH3()}
+              text={`${this.state.Statut_H3['Analyse REX']} - ${this.AnalyseRexStateH3()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee'
+              })}
+            />
+          </div>
+          <br/>
+          <div className='AnalyseRexH4'>
+            <h4>Pourcentage de analyse REX en H1</h4>
+            <CircularProgressbar 
+              value={this.AnalyseRexStateH4()}
+              text={`${this.state.Statut_H3['Analyse REX']} - ${this.AnalyseRexStateH4()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee'
+              })}
+            />
+          </div>
+          <br/>
+          <div className='piecesH1'>
+            <h4>Pourcentage d'att pièces en H1</h4>
+            <CircularProgressbar 
+              value={this.AttPiecesStateH1()}
+              text={`${this.state.Statut_H1['Att pièces']} - ${this.AttPiecesStateH1()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee'
+              })}
+            />
+          </div>
+          <br/>
+          <div className='piecesH2'>
+            <h4>Pourcentage d'att pièces en H2</h4>
+            <CircularProgressbar 
+              value={this.AttPiecesStateH2()}
+              text={`${this.state.Statut_H2['Att pièces']} - ${this.AttPiecesStateH2()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee'
+              })}
+            />  
+          </div>
+          <br/>
+          <div className='piecesH3'>
+            <h4>Pourcentage d'att pièces en H3</h4>
+            <CircularProgressbar 
+              value={this.AttPiecesStateH3()}
+              text={`${this.state.Statut_H3['Att pièces']} - ${this.AttPiecesStateH3()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee'
+              })}
+            />
+          </div>
             <br/>
             <div className='piecesH4'>
               <h4>Pourcentage d'att pièces en H4</h4>
               <CircularProgressbar 
                 value={this.AttPiecesStateH4()}
-                text={`${this.AttPiecesStateH4()}%`}
+                text={`${this.state.Statut_H4['Att pièces']} - ${this.AttPiecesStateH4()}%`}
                 circleRatio={0.6}
                 styles={buildStyles({
                   rotation: 1 / 2 + 1 / 5,
@@ -671,7 +668,7 @@ class Rexmat extends Component {
               <h4>Pourcentage de cloturé en H1</h4>
               <CircularProgressbar 
                 value={this.ClotureStateH1()}
-                text={`${this.ClotureStateH1()}%`}
+                text={`${this.state.Statut_H1.Cloturé} - ${this.ClotureStateH1()}%`}
                 circleRatio={0.6}
                 styles={buildStyles({
                   rotation: 1 / 2 + 1 / 5,
@@ -685,7 +682,7 @@ class Rexmat extends Component {
               <h4>Pourcentage de cloturé en H2</h4>
               <CircularProgressbar 
                 value={this.ClotureStateH2()}
-                text={`${this.ClotureStateH2()}%`}
+                text={`${this.state.Statut_H2.Cloturé} - ${this.ClotureStateH2()}%`}
                 circleRatio={0.6}
                 styles={buildStyles({
                   rotation: 1 / 2 + 1 / 5,
@@ -699,7 +696,7 @@ class Rexmat extends Component {
               <h4>Pourcentage de cloturé en H3</h4>
               <CircularProgressbar 
                 value={this.ClotureStateH3()}
-                text={`${this.ClotureStateH3()}%`}
+                text={`${this.state.Statut_H3.Cloturé} - ${this.ClotureStateH3()}%`}
                 circleRatio={0.6}
                 styles={buildStyles({
                   rotation: 1 / 2 + 1 / 5,
@@ -713,7 +710,7 @@ class Rexmat extends Component {
               <h4>Pourcentage de cloturé en H4</h4>
               <CircularProgressbar 
                 value={this.ClotureStateH4()}
-                text={`${this.ClotureStateH4()}%`}
+                text={`${this.state.Statut_H4.Cloturé} - ${this.ClotureStateH4()}%`}
                 circleRatio={0.6}
                 styles={buildStyles({
                   rotation: 1 / 2 + 1 / 5,
@@ -727,7 +724,7 @@ class Rexmat extends Component {
               <h4>Pourcentage de en cours en H1</h4>
               <CircularProgressbar 
                 value={this.EnCoursStateH1()}
-                text={`${this.EnCoursStateH1()}%`}
+                text={`${this.state.Statut_H1['En cours']} - ${this.EnCoursStateH1()}%`}
                 circleRatio={0.6}
                 styles={buildStyles({
                   rotation: 1 / 2 + 1 / 5,
@@ -741,7 +738,7 @@ class Rexmat extends Component {
               <h4>Pourcentage de en cours en H2</h4>
               <CircularProgressbar 
                 value={this.EnCoursStateH2()}
-                text={`${this.EnCoursStateH2()}%`}
+                text={`${this.state.Statut_H2['En cours']} - ${this.EnCoursStateH2()}%`}
                 circleRatio={0.6}
                 styles={buildStyles({
                   rotation: 1 / 2 + 1 / 5,
@@ -755,7 +752,7 @@ class Rexmat extends Component {
               <h4>Pourcentage de en cours en H3</h4>
               <CircularProgressbar 
                 value={this.EnCoursStateH3()}
-                text={`${this.EnCoursStateH3()}%`}
+                text={`${this.state.Statut_H3['En cours']} - ${this.EnCoursStateH3()}%`}
                 circleRatio={0.6}
                 styles={buildStyles({
                   rotation: 1 / 2 + 1 / 5,
@@ -769,7 +766,7 @@ class Rexmat extends Component {
               <h4>Pourcentage de en cours en H4</h4>
               <CircularProgressbar 
                 value={this.EnCoursStateH4()}
-                text={`${this.EnCoursStateH4()}%`}
+                text={`${this.state.Statut_H4['En cours']} - ${this.EnCoursStateH4()}%`}
                 circleRatio={0.6}
                 styles={buildStyles({
                   rotation: 1 / 2 + 1 / 5,
@@ -783,7 +780,7 @@ class Rexmat extends Component {
               <h4>Pourcentage de rame à vigiler H1</h4>
               <CircularProgressbar 
                 value={this.RameVigilerStateH1()}
-                text={`${this.RameVigilerStateH1()}%`}
+                text={`${this.state.Statut_H1['Rame à vigiler']} - ${this.RameVigilerStateH1()}%`}
                 circleRatio={0.6}
                 styles={buildStyles({
                   rotation: 1 / 2 + 1 / 5,
@@ -797,7 +794,7 @@ class Rexmat extends Component {
               <h4>Pourcentage de rame à vigiler H2</h4>
               <CircularProgressbar 
                 value={this.RameVigilerStateH2()}
-                text={`${this.RameVigilerStateH2()}%`}
+                text={`${this.state.Statut_H2['Rame à vigiler']} - ${this.RameVigilerStateH2()}%`}
                 circleRatio={0.6}
                 styles={buildStyles({
                   rotation: 1 / 2 + 1 / 5,
@@ -811,7 +808,7 @@ class Rexmat extends Component {
               <h4>Pourcentage de rame à vigiler H3</h4>
               <CircularProgressbar 
                 value={this.RameVigilerStateH3()}
-                text={`${this.RameVigilerStateH3()}%`}
+                text={`${this.state.Statut_H3['Rame à vigiler']} - ${this.RameVigilerStateH3()}%`}
                 circleRatio={0.6}
                 styles={buildStyles({
                   rotation: 1 / 2 + 1 / 5,
@@ -825,7 +822,7 @@ class Rexmat extends Component {
               <h4>Pourcentage de rame à vigiler H4</h4>
               <CircularProgressbar 
                 value={this.RameVigilerStateH4()}
-                text={`${this.RameVigilerStateH4()}%`}
+                text={`${this.state.Statut_H4['Rame à vigiler']} - ${this.RameVigilerStateH4()}%`}
                 circleRatio={0.6}
                 styles={buildStyles({
                   rotation: 1 / 2 + 1 / 5,
@@ -834,6 +831,9 @@ class Rexmat extends Component {
                 })}
               />
             </div>
+          </div>
+          <div className='btn-Week'>
+            <button onClick={this.handleGetDataFromMongoForWeek }>Create JSON file for week</button>
           </div>
       </div>
     )

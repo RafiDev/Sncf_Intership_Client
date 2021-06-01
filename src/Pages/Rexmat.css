@@ -9,15 +9,22 @@ ul {
     padding-left: 40px;
 }
 
+.selectTime {
+    width: 15%;
+    position: absolute;
+    top: 206px;
+}
+
 .date {
     position: absolute;
     top: 206px;
+    left: 450px;
 }
 
 .upload {
     position: absolute;
     top: 206px;
-    left: 540px;
+    left: 920px;
 }
 
 .Rames {
@@ -210,4 +217,9 @@ ul {
     position: absolute;
     top: 5300px;
     left: 1620px;
+}
+
+.btn-Week {
+    position: absolute;
+    top: 5500px;
 }
