@@ -20,7 +20,6 @@ class Rexmat extends Component {
       startDate: null,
       endDate: null,
       selectedFile: null,
-      loaded: null,
       Hierarchie_de_la_flotte: [],
       Type_de_signalement: [],
       Signalement_H1: [],
@@ -31,6 +30,7 @@ class Rexmat extends Component {
       Statut_H2: [],
       Statut_H3: [],
       Statut_H4: [],
+      Nombre_de_signalements_par_rame_de_la_flotte: [],
       data: [],
     }
     this.handleGetDataFromMongoForWeek  = this.handleGetDataFromMongoForWeek.bind(this);
@@ -88,12 +88,8 @@ class Rexmat extends Component {
       loaded: 0,
     })
   }
+
   handleUpload = async() => {
-    /*const axiosConfig = {
-      headers: {
-        'Access-Control-Allow-Origin': 'https://sncf-intership-server.herokuapp.com',
-      }
-    }*/
     
     const data = new FormData()
     data.append('file', this.state.selectedFile, this.state.selectedFile.name)
@@ -102,26 +98,22 @@ class Rexmat extends Component {
     data.append('dateEnd', this.state.endDate)
     
     await axios
-      .post('http://localhost:8000/rexmat', data, {
-        onUploadProgress: ProgressEvent => {
-          this.setState({
-            loaded: (ProgressEvent.loaded / ProgressEvent.total) * 100,
-          })
-        },
-      })
+      .post('http://localhost:8000/rexmat', data)
       .then(res => {
         console.log(res.data);
         this.setState({
           Hierarchie_de_la_flotte: res.data['Hiérarchie de la flotte'],
           Type_de_signalement: res.data["Type de signalement"],
-          Signalement_H1: res.data["Signalement par hiérarchie"]["systeme en H1"],
-          Signalement_H2: res.data["Signalement par hiérarchie"]["systeme en H2"],
-          Signalement_H3: res.data["Signalement par hiérarchie"]["systeme en H3"],
-          Signalement_H4: res.data["Signalement par hiérarchie"]["systeme en H4"],
+          Signalement_H1: res.data["Signalement par hiérarchie"]["H1"],
+          Signalement_H2: res.data["Signalement par hiérarchie"]["H2"],
+          Signalement_H3: res.data["Signalement par hiérarchie"]["H3"],
+          Signalement_H4: res.data["Signalement par hiérarchie"]["H4"],
           Statut_H1: res.data["Statut par hiérarchie"].H1,
           Statut_H2: res.data["Statut par hiérarchie"].H2,
           Statut_H3: res.data["Statut par hiérarchie"].H3,
           Statut_H4: res.data["Statut par hiérarchie"].H4,
+          Nombre_de_signalements_par_rame_de_la_flotte: res.data["Nombre de signalements par rame de la flotte L/J"],
+          data: res.data,
         })
       })
   }
@@ -133,7 +125,7 @@ class Rexmat extends Component {
         console.log(res.data);
       })
   }
-    
+
   barSignalementHierarchie = () => {
     const state = {
       labels: ['ATESS', 'Afficheur', 'BS', 'CCTV', 'Climatisation', 'Compresseur', 'Comptage Passagers', 'Coupleur', 'Detection Incendie', 'EMCO', 'EQS', 'Eclairage', 'Frein', 'Lecteur Badge', 'Porte', 'Pupitre', 'STMAutonome', 'Sonorisation', 'TCMS', 'TDB'],
@@ -456,6 +448,7 @@ class Rexmat extends Component {
             placeholder="Selectionner la durée"
           />
         </div>
+        <br/>
         <div className="date">
           <DatePicker 
             selected={this.state.startDate}
@@ -481,13 +474,17 @@ class Rexmat extends Component {
           <button onClick={this.handleUpload}>Upload</button>
         </div>
         <br/>
+        <div className='btn-Week'>
+          <button onClick={this.handleGetDataFromMongoForWeek }>Create JSON file for week</button>
+        </div>
+        <br/>
         <div className='bar'>
-          <div className='barSignalement'>
+        <div className='barSignalement'>
             <Bar
               data={this.barSignalementHierarchie()}
             />
-          </div>
-          <br/>
+        </div>
+        <br/>
           <div className='barStates'>
             <Bar
               data={this.barSignalementState()}
@@ -505,7 +502,8 @@ class Rexmat extends Component {
               styles={buildStyles({
                 rotation: 1 / 2 + 1 / 5,
                 strokeLinecap: 'butt',
-                trailColor: '#eee'
+                trailColor: '#eee',
+                textSize: '10px',
               })}
             />
           </div>
@@ -519,7 +517,8 @@ class Rexmat extends Component {
               styles={buildStyles({
                 rotation: 1 / 2 + 1 / 5,
                 strokeLinecap: 'butt',
-                trailColor: '#eee'
+                trailColor: '#eee',
+                textSize: '10px',
               })}
             />
           </div>
@@ -533,7 +532,8 @@ class Rexmat extends Component {
               styles={buildStyles({
                 rotation: 1 / 2 + 1 / 5,
                 strokeLinecap: 'butt',
-                trailColor: '#eee'
+                trailColor: '#eee',
+                textSize: '10px',
               })}
             />
           </div>
@@ -547,7 +547,8 @@ class Rexmat extends Component {
               styles={buildStyles({
                 rotation: 1 / 2 + 1 / 5,
                 strokeLinecap: 'butt',
-                trailColor: '#eee'
+                trailColor: '#eee',
+                textSize: '10px',
               })}
             />
           </div>
@@ -561,7 +562,8 @@ class Rexmat extends Component {
               styles={buildStyles({
                 rotation: 1 / 2 + 1 / 5,
                 strokeLinecap: 'butt',
-                trailColor: '#eee'
+                trailColor: '#eee',
+                textSize: '10px',
               })}
             />
           </div>
@@ -575,7 +577,8 @@ class Rexmat extends Component {
               styles={buildStyles({
                 rotation: 1 / 2 + 1 / 5,
                 strokeLinecap: 'butt',
-                trailColor: '#eee'
+                trailColor: '#eee',
+                textSize: '10px',
               })}
             />
           </div>
@@ -589,7 +592,8 @@ class Rexmat extends Component {
               styles={buildStyles({
                 rotation: 1 / 2 + 1 / 5,
                 strokeLinecap: 'butt',
-                trailColor: '#eee'
+                trailColor: '#eee',
+                textSize: '10px',
               })}
             />
           </div>
@@ -598,12 +602,13 @@ class Rexmat extends Component {
             <h4>Pourcentage de analyse REX en H1</h4>
             <CircularProgressbar 
               value={this.AnalyseRexStateH4()}
-              text={`${this.state.Statut_H3['Analyse REX']} - ${this.AnalyseRexStateH4()}%`}
+              text={`${this.state.Statut_H4['Analyse REX']} - ${this.AnalyseRexStateH4()}%`}
               circleRatio={0.6}
               styles={buildStyles({
                 rotation: 1 / 2 + 1 / 5,
                 strokeLinecap: 'butt',
-                trailColor: '#eee'
+                trailColor: '#eee',
+                textSize: '10px',
               })}
             />
           </div>
@@ -617,7 +622,8 @@ class Rexmat extends Component {
               styles={buildStyles({
                 rotation: 1 / 2 + 1 / 5,
                 strokeLinecap: 'butt',
-                trailColor: '#eee'
+                trailColor: '#eee',
+                textSize: '10px',
               })}
             />
           </div>
@@ -631,7 +637,8 @@ class Rexmat extends Component {
               styles={buildStyles({
                 rotation: 1 / 2 + 1 / 5,
                 strokeLinecap: 'butt',
-                trailColor: '#eee'
+                trailColor: '#eee',
+                textSize: '10px',
               })}
             />  
           </div>
@@ -645,196 +652,207 @@ class Rexmat extends Component {
               styles={buildStyles({
                 rotation: 1 / 2 + 1 / 5,
                 strokeLinecap: 'butt',
-                trailColor: '#eee'
+                trailColor: '#eee',
+                textSize: '10px',
               })}
             />
           </div>
-            <br/>
-            <div className='piecesH4'>
-              <h4>Pourcentage d'att pièces en H4</h4>
-              <CircularProgressbar 
-                value={this.AttPiecesStateH4()}
-                text={`${this.state.Statut_H4['Att pièces']} - ${this.AttPiecesStateH4()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />  
-            </div>
-            <br/>
-            <div className='clotureH1'>
-              <h4>Pourcentage de cloturé en H1</h4>
-              <CircularProgressbar 
-                value={this.ClotureStateH1()}
-                text={`${this.state.Statut_H1.Cloturé} - ${this.ClotureStateH1()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
-            <br/>
-            <div className='clotureH2'>
-              <h4>Pourcentage de cloturé en H2</h4>
-              <CircularProgressbar 
-                value={this.ClotureStateH2()}
-                text={`${this.state.Statut_H2.Cloturé} - ${this.ClotureStateH2()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />    
-            </div>
-            <br/>
-            <div className='clotureH3'>
-              <h4>Pourcentage de cloturé en H3</h4>
-              <CircularProgressbar 
-                value={this.ClotureStateH3()}
-                text={`${this.state.Statut_H3.Cloturé} - ${this.ClotureStateH3()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              /> 
-            </div>
-            <br/>
-            <div className='clotureH4'>
-              <h4>Pourcentage de cloturé en H4</h4>
-              <CircularProgressbar 
-                value={this.ClotureStateH4()}
-                text={`${this.state.Statut_H4.Cloturé} - ${this.ClotureStateH4()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
-            <br/>
-            <div className='EnCoursH1'>
-              <h4>Pourcentage de en cours en H1</h4>
-              <CircularProgressbar 
-                value={this.EnCoursStateH1()}
-                text={`${this.state.Statut_H1['En cours']} - ${this.EnCoursStateH1()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
-            <br/>
-            <div className='EnCoursH2'>
-              <h4>Pourcentage de en cours en H2</h4>
-              <CircularProgressbar 
-                value={this.EnCoursStateH2()}
-                text={`${this.state.Statut_H2['En cours']} - ${this.EnCoursStateH2()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
-            <br/>
-            <div className='EnCoursH3'>
-              <h4>Pourcentage de en cours en H3</h4>
-              <CircularProgressbar 
-                value={this.EnCoursStateH3()}
-                text={`${this.state.Statut_H3['En cours']} - ${this.EnCoursStateH3()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
-            <br/>
-            <div className='EnCoursH4'>
-              <h4>Pourcentage de en cours en H4</h4>
-              <CircularProgressbar 
-                value={this.EnCoursStateH4()}
-                text={`${this.state.Statut_H4['En cours']} - ${this.EnCoursStateH4()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
-            <br/>
-            <div className='vigilerH1'>
-              <h4>Pourcentage de rame à vigiler H1</h4>
-              <CircularProgressbar 
-                value={this.RameVigilerStateH1()}
-                text={`${this.state.Statut_H1['Rame à vigiler']} - ${this.RameVigilerStateH1()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
-            <br/>
-            <div className='vigilerH2'>
-              <h4>Pourcentage de rame à vigiler H2</h4>
-              <CircularProgressbar 
-                value={this.RameVigilerStateH2()}
-                text={`${this.state.Statut_H2['Rame à vigiler']} - ${this.RameVigilerStateH2()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
-            <br/>
-            <div className='vigilerH3'>
-              <h4>Pourcentage de rame à vigiler H3</h4>
-              <CircularProgressbar 
-                value={this.RameVigilerStateH3()}
-                text={`${this.state.Statut_H3['Rame à vigiler']} - ${this.RameVigilerStateH3()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
-            <br/>
-            <div className='vigilerH4'>
-              <h4>Pourcentage de rame à vigiler H4</h4>
-              <CircularProgressbar 
-                value={this.RameVigilerStateH4()}
-                text={`${this.state.Statut_H4['Rame à vigiler']} - ${this.RameVigilerStateH4()}%`}
-                circleRatio={0.6}
-                styles={buildStyles({
-                  rotation: 1 / 2 + 1 / 5,
-                  strokeLinecap: 'butt',
-                  trailColor: '#eee'
-                })}
-              />
-            </div>
+          <br/>
+          <div className='piecesH4'>
+            <h4>Pourcentage d'att pièces en H4</h4>
+            <CircularProgressbar 
+              value={this.AttPiecesStateH4()}
+              text={`${this.state.Statut_H4['Att pièces']} - ${this.AttPiecesStateH4()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee',
+                textSize: '10px',
+              })}
+            />  
           </div>
-          <div className='btn-Week'>
-            <button onClick={this.handleGetDataFromMongoForWeek }>Create JSON file for week</button>
+          <br/>
+          <div className='clotureH1'>
+            <h4>Pourcentage de cloturé en H1</h4>
+            <CircularProgressbar 
+              value={this.ClotureStateH1()}
+              text={`${this.state.Statut_H1.Cloturé} - ${this.ClotureStateH1()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee',
+                textSize: '10px',
+              })}
+            />
           </div>
+          <br/>
+          <div className='clotureH2'>
+            <h4>Pourcentage de cloturé en H2</h4>
+            <CircularProgressbar 
+              value={this.ClotureStateH2()}
+              text={`${this.state.Statut_H2.Cloturé} - ${this.ClotureStateH2()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee',
+                textSize: '10px',
+              })}
+            />    
+          </div>
+          <br/>
+          <div className='clotureH3'>
+            <h4>Pourcentage de cloturé en H3</h4>
+            <CircularProgressbar 
+              value={this.ClotureStateH3()}
+              text={`${this.state.Statut_H3.Cloturé} - ${this.ClotureStateH3()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee',
+                textSize: '10px',
+              })}
+            /> 
+          </div>
+          <br/>
+          <div className='clotureH4'>
+            <h4>Pourcentage de cloturé en H4</h4>
+            <CircularProgressbar 
+              value={this.ClotureStateH4()}
+              text={`${this.state.Statut_H4.Cloturé} - ${this.ClotureStateH4()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee',
+                textSize: '10px',
+              })}
+            />
+          </div>
+          <br/>
+          <div className='EnCoursH1'>
+            <h4>Pourcentage de en cours en H1</h4>
+            <CircularProgressbar 
+              value={this.EnCoursStateH1()}
+              text={`${this.state.Statut_H1['En cours']} - ${this.EnCoursStateH1()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee',
+                textSize: '10px',
+              })}
+            />
+          </div>
+          <br/>
+          <div className='EnCoursH2'>
+            <h4>Pourcentage de en cours en H2</h4>
+            <CircularProgressbar 
+              value={this.EnCoursStateH2()}
+              text={`${this.state.Statut_H2['En cours']} - ${this.EnCoursStateH2()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee',
+                textSize: '10px',
+              })}
+            />
+          </div>
+          <br/>
+          <div className='EnCoursH3'>
+            <h4>Pourcentage de en cours en H3</h4>
+            <CircularProgressbar 
+              value={this.EnCoursStateH3()}
+              text={`${this.state.Statut_H3['En cours']} - ${this.EnCoursStateH3()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee',
+                textSize: '10px',
+              })}
+            />
+          </div>
+          <br/>
+          <div className='EnCoursH4'>
+            <h4>Pourcentage de en cours en H4</h4>
+            <CircularProgressbar 
+              value={this.EnCoursStateH4()}
+              text={`${this.state.Statut_H4['En cours']} - ${this.EnCoursStateH4()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee',
+                textSize: '10px',
+              })}
+            />
+          </div>
+          <br/>
+          <div className='vigilerH1'>
+            <h4>Pourcentage de rame à vigiler H1</h4>
+            <CircularProgressbar 
+              value={this.RameVigilerStateH1()}
+              text={`${this.state.Statut_H1['Rame à vigiler']} - ${this.RameVigilerStateH1()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee',
+                textSize: '10px',
+              })}
+            />
+          </div>
+          <br/>
+          <div className='vigilerH2'>
+            <h4>Pourcentage de rame à vigiler H2</h4>
+            <CircularProgressbar 
+              value={this.RameVigilerStateH2()}
+              text={`${this.state.Statut_H2['Rame à vigiler']} - ${this.RameVigilerStateH2()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee',
+                textSize: '10px',
+              })}
+            />
+          </div>
+          <br/>
+          <div className='vigilerH3'>
+            <h4>Pourcentage de rame à vigiler H3</h4>
+            <CircularProgressbar 
+              value={this.RameVigilerStateH3()}
+              text={`${this.state.Statut_H3['Rame à vigiler']} - ${this.RameVigilerStateH3()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee',
+                textSize: '10px',
+              })}
+            />
+          </div>
+          <br/>
+          <div className='vigilerH4'>
+            <h4>Pourcentage de rame à vigiler H4</h4>
+            <CircularProgressbar 
+              value={this.RameVigilerStateH4()}
+              text={`${this.state.Statut_H4['Rame à vigiler']} - ${this.RameVigilerStateH4()}%`}
+              circleRatio={0.6}
+              styles={buildStyles({
+                rotation: 1 / 2 + 1 / 5,
+                strokeLinecap: 'butt',
+                trailColor: '#eee',
+                textSize: '10px',
+              })}
+            />
+          </div>
+        </div>
       </div>
     )
   }

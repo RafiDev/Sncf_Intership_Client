@@ -1,53 +1,48 @@
 import React, { Component } from 'react';
-import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
+import Navbar from './NavBar'
+import { BrowserRouter as Router, Switch, Route} from 'react-router-dom';
 import './App.css'
+import Home from './Pages/Home'
 import Rexmat from './Pages/Rexmat';
 import Puma from './Pages/Puma';
 
 class App extends Component {
+  constructor (props) {
+    super(props);
+    this.state = {
+      windowWidth: 0,
+      windowHeight: 0
+    }
+  }
+
+  componentDidMount() {
+    this.updateDimensions();
+    window.addEventListener("resize", this.updateDimensions.bind(this));
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.updateDimensions.bind(this));
+  }
+
+  updateDimensions() {
+    let windowWidth = typeof window !== "undefined" ? window.innerWidth : 0;
+    let windowHeight = typeof window !== "undefined" ? window.innerHeight : 0;
+
+    this.setState({ windowWidth, windowHeight });
+  }
+
   render() {
     return (
       <Router>
-        <div>
-          <ul>
-            <li>
-              <Link to="/">Home</Link>
-            </li>
-            <li>
-              <Link to="/rexmat">Rexmat</Link>
-            </li>
-            <li>
-              <Link to="/puma">Puma</Link>
-            </li>
-          </ul>
-
-          <hr />
-
+          <Navbar />
           <Switch>
-            <Route exact path="/">
-              <Home />
-            </Route>
-            <Route path="/rexmat">
-              <Rexmat />
-            </Route>
-            <Route path="/puma">
-              <Puma />
-            </Route>
+            <Route path='/' exact component={Home} />
+            <Route path='/rexmat' exact component={Rexmat} />
+            <Route path='/puma' exact component={Puma} />
           </Switch>
-        </div>
       </Router>
     );
   }
-}
-
-function Home() {
-  return (
-    <div>
-      <h2>Home</h2>
-      <br/>
-      <p>Soon</p>
-    </div>
-  );
 }
 
 export default App
